@@ -58,6 +58,11 @@ S3_BUCKET_NAME="xxxxxx
 chmod +x ~/s3bk-mysql.sh
 ```
 
+The script is now ready to use. Feel free to test it:
+```bash
+./s3bk-mysql.sh
+```
+
 4. Set up a cron job (optional):
 
 ```bash
@@ -113,6 +118,11 @@ The script will automatically prefix `s3://${S3_BUCKET_NAME}/` to each destinati
 
 ```bash
 chmod +x ~/s3bk-static.sh
+```
+
+The script is now ready to use. Feel free to test it:
+```bash
+./s3bk-static.sh
 ```
 
 4. Set up a cron job (optional):
