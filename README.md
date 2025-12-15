@@ -39,7 +39,7 @@ This script dumps all databases (excluding system databases), compresses them, a
 
 ```bash
 cd ~
-curl -O https://raw.githubusercontent.com/jyoungblood/s3bk/0.1/s3bk-mysql.sh
+curl -O https://raw.githubusercontent.com/jyoungblood/s3bk/0.1.0/s3bk-mysql.sh
 ```
 
 2. Edit the configuration variables at the top of the script:
@@ -96,7 +96,7 @@ This script syncs local directories of static files to a specific S3 location.
 
 ```bash
 cd ~
-curl -O https://raw.githubusercontent.com/jyoungblood/s3bk/0.1/s3bk-static.sh
+curl -O https://raw.githubusercontent.com/jyoungblood/s3bk/0.1.0/s3bk-static.sh
 ```
 
 2. Edit the configuration variables at the top of the script:
