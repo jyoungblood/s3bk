@@ -1,52 +1,55 @@
 #!/bin/bash
 
-# Based on https://gist.github.com/2206527
+# MySQL database backup utility for S3-compatible storage
+# https://github.com/jyoungblood/s3bk
 
-# Be pretty
-echo -e " "
-echo -e " .  ____  .    ______________________________"
-echo -e " |/      \|   |                              |"
-echo -e "[| \e[1;31m♥    ♥\e[00m |]  | S3 MySQL Backup Script v.0.1 |"
-echo -e " |___==___|  /                © oodavid 2012 |"
-echo -e "              |______________________________|"
-echo -e " "
 
-# Basic variables
-mysqlpass="xxxx"
-bucket="s3://blahblah"
+# Configuration variables
+MYSQL_USER="root"
+MYSQL_PASSWORD="xxxxxx"
+S3_BUCKET_NAME="xxxxxx"
+TEMP_DIR="/tmp"
+
+
+########################################################################
+
+
+# Exit on error
+set -e
 
 # Timestamp (sortable AND readable)
-stamp=`date +"%s - %A %d %B %Y @ %H%M"`
+TIMESTAMP=$(date +"%s - %A %d %B %Y @ %H%M")
 
-# List all the databases
-databases=`mysql -u root -p$mysqlpass -e "SHOW DATABASES;" | tr -d "| " | grep -v "\(Database\|information_schema\|performance_schema\|mysql\|test\)"`
+# List all databases (excluding system databases)
+DATABASES=$(mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SHOW DATABASES;" | tr -d "| " | grep -v "\(Database\|information_schema\|performance_schema\|mysql\|test\)")
 
-# Feedback
-echo -e "Dumping to \e[1;32m$bucket/$stamp/\e[00m"
+# Display backup destination
+echo "Backing up databases to: s3://${S3_BUCKET_NAME}/$TIMESTAMP/"
 
-# Loop the databases
-for db in $databases; do
+# Process each database
+for DATABASE in $DATABASES; do
 
-  # Define our filenames
-  filename="$stamp - $db.sql.gz"
-  tmpfile="/tmp/$filename"
-  object="$bucket/$stamp/$filename"
+    # Define backup filenames
+    BACKUP_FILENAME="$TIMESTAMP - $DATABASE.sql.gz"
+    TEMP_FILE="$TEMP_DIR/$BACKUP_FILENAME"
+    S3_OBJECT="s3://${S3_BUCKET_NAME}/$TIMESTAMP/$BACKUP_FILENAME"
 
-  # Feedback
-  echo -e "\e[1;34m$db\e[00m"
+    # Display current database being processed
+    echo "Processing database: $DATABASE"
 
-  # Dump and zip
-  echo -e "  creating \e[0;35m$tmpfile\e[00m"
-  mysqldump -u root -p$mysqlpass --force --opt --databases "$db" | gzip -c > "$tmpfile"
+    # Create compressed database dump
+    echo "  Creating backup file: $TEMP_FILE"
+    mysqldump -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" --force --opt --databases "$DATABASE" | gzip -c > "$TEMP_FILE"
 
-  # Upload
-  echo -e "  uploading..."
-  s3cmd put "$tmpfile" "$object"
+    # Upload backup to S3
+    echo "  Uploading backup to S3..."
+    s3cmd put "$TEMP_FILE" "$S3_OBJECT"
 
-  # Delete
-  rm -f "$tmpfile"
+    # Remove temporary backup file
+    rm -f "$TEMP_FILE"
+    echo "  Backup completed for database: $DATABASE"
 
-done;
+done
 
-# Jobs a goodun
-echo -e "\e[1;32mJobs a goodun\e[00m"
+# Display completion message
+echo "Successfully backed up all databases to: s3://${S3_BUCKET_NAME}/$TIMESTAMP/"

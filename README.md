@@ -1,114 +1,137 @@
 # s3bk
 
-bash scripts for automating mysql and static file backups to s3 using [s3cmd](https://s3tools.org/s3cmd)
+Bash scripts for automating MySQL and static file backups to S3-compatible storage using [s3cmd](https://s3tools.org/s3cmd).
 
-works with all s3-compatible storage (including r2)
+Works with all S3-compatible storage services, including Cloudflare R2.
 
 ---
 
-
-# s3cmd setup
+## Prerequisites
 
 ### Install s3cmd
 
-see the docs and find the right repository for your distro - https://s3tools.org/repositories
+See the [s3cmd documentation](https://s3tools.org/repositories) to find the appropriate repository for your distro.
 
+### Configure s3cmd
 
+Run the configuration wizard to set up your S3 credentials:
 
-### Configure with s3 credentials
-
-```
+```bash
 s3cmd --configure
 ```
 
-add your creds for aws s3 or cloudflare r2 (or any s3-compatible storage)
+Configure your credentials for AWS S3, Cloudflare R2, or any other S3-compatible storage service. The configuration file is saved to `$HOME/.s3cfg` by default.
 
-defaults to $HOME/.s3cfg, make sure you put the creds in the right place
+### Requirements
 
-
-
-the following instructions will be
-assuming your config is in the same dir as the script (and you're cd'd to that dir) (which we'll assume is '/~'), and that your user that runs the script can run mysqldump
-  also assuming you're doing this as the user who will run the script, otherwise you'll need to chown as well once it's been created & updated
-
+- The user running the script must have permission to execute `mysqldump` (for MySQL backups)
+- Ensure the script is executable and owned by the user who will run it
 
 ---
 
+## s3bk-mysql
 
+Automated MySQL database backup script that dumps all databases (excluding system databases) to S3.
 
+### Setup
 
+1. Download the script to your machine:
 
-
-## s3bk-mysql (mysql backup script)
-
-
-[] curl download
-
-nano s3bk-mysql.sh
-  (add your mysql creds)
-  - also need to exclude any databases that don’t need to be backed up (ex: |reininghost_rsdb\)
-
-
-make it executable
+```bash
+cd ~
+curl -O https://raw.githubusercontent.com/jyoungblood/s3bk/0.1/s3bk-mysql.sh
 ```
+
+2. Edit the configuration variables at the top of the script:
+```bash
+nano ~/s3bk-mysql.sh
+```
+```bash
+MYSQL_USER="root"
+MYSQL_PASSWORD="xxxxxx"
+S3_BUCKET_NAME="xxxxxx
+```
+
+**Note:** Root access is typically required if backing up all databases. You may also need to modify the database exclusion filter if you want to exclude additional databases beyond the default system databases.
+
+3. Make the script executable:
+
+```bash
 chmod +x ~/s3bk-mysql.sh
 ```
 
-[] set cron job
-```
+4. Set up a cron job (optional):
+
+```bash
 crontab -e
 ```
-0 3 * * * bash ~/s3mysqlbackup.sh
-(i set it to run at 3am)
+
+Add a line to run the backup daily (at 3 AM, for example):
+
+```
+0 3 * * * bash ~/s3bk-mysql.sh
 ```
 
+### Tips
 
+- If using Plesk, you may need to set the password using: `MYSQL_PASSWORD="$(cat /etc/psa/.psa.shadow)"`
 
-
-
-TIPS
-- one time i had to set password to `mysqlpassword="$(cat /etc/psa/.psa.shadow)"`​ but it worked lol
-
-
-
-
-
-
-
+---
 
 ## s3bk-static
 
+Automated static file backup script that syncs local directories to S3.
 
+### Setup
 
-[] curl download
+1. Download the script to your machine:
 
-
-
-nano s3bk-static.sh
-  add your file path that you want to back up (the whole directory) and 
-
-
-make it executable
-```
-chmod +x ~/s3bk-mysql.sh
+```bash
+cd ~
+curl -O https://raw.githubusercontent.com/jyoungblood/s3bk/0.1/s3bk-mysql.sh
 ```
 
-[] set cron job
+
+
+2. Edit the configuration variables at the top of the script:
+
+```bash
+nano ~/s3bk-static.sh
 ```
+
+```bash
+S3_BUCKET_NAME="xxxxxx"
+
+# Backup paths configuration
+# Format: local_path => s3_destination_path
+BACKUP_PATHS=(
+    "/path/to/local/directory/ => s3_destination_path/"
+    "/another/local/path/ => another_destination/"
+)
+```
+
+The script will automatically prefix `s3://${S3_BUCKET_NAME}/` to each destination path.
+
+3. Make the script executable:
+
+```bash
+chmod +x ~/s3bk-static.sh
+```
+
+4. Set up a cron job (optional):
+
+```bash
 crontab -e
 ```
-0 3 * * * bash ~/s3mysqlbackup.sh
-(i set it to run at 3am)
+
+Add a line to run the backup daily (at 3 AM, for example):
+
 ```
-
-
-
-
-
-
-
+0 3 * * * bash ~/s3bk-static.sh
+```
 
 ---
 
-based on David King's s3mysqlbackup.sh - https://gist.github.com/oodavid/2206527/
-shout out to a real legend
+## Credits
+
+Based on David King's [s3mysqlbackup.sh](https://gist.github.com/oodavid/2206527/).
