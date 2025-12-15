@@ -4,8 +4,6 @@ Bash scripts for automating MySQL and static file backups to S3-compatible stora
 
 Works with all S3-compatible storage services, including Cloudflare R2.
 
-Heavily inspired by David King's classic [s3mysqlbackup.sh](https://gist.github.com/oodavid/2206527/)
-
 ---
 
 ## Prerequisites - s3cmd setup
@@ -48,8 +46,9 @@ nano ~/s3bk-mysql.sh
 ```
 ```bash
 MYSQL_USER="root"
-MYSQL_PASSWORD="xxxxxx"
-S3_BUCKET_NAME="xxxxxx
+MYSQL_PASSWORD="rootP4$5w0Rd"
+S3_BUCKET_NAME="bucket"
+S3_DESTINATION_PATH="destination/path"
 ```
 
 3. Make the script executable:
@@ -106,13 +105,13 @@ nano ~/s3bk-static.sh
 ```
 
 ```bash
-S3_BUCKET_NAME="xxxxxx"
+S3_BUCKET_NAME="bucket"
 
 # Backup paths configuration
 # Format: local_path => s3_destination_path
 BACKUP_PATHS=(
-    "/path/to/local/directory/ => s3_destination_path/"
-    "/another/local/path/ => another_destination/"
+    "/home/blahblah/media => /static/media"
+    "/home/blahblah/videos => /static/videos"
 )
 ```
 

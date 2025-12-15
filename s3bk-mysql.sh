@@ -8,6 +8,7 @@
 MYSQL_USER="root"
 MYSQL_PASSWORD="xxxxxx"
 S3_BUCKET_NAME="xxxxxx"
+S3_DESTINATION_PATH="xxxxxx"
 TEMP_DIR="/tmp"
 
 
@@ -35,6 +36,13 @@ log() {
 # Exit on error
 set -e
 
+# Normalize S3_DESTINATION_PATH: remove leading/trailing slashes, then add trailing slash if not empty
+# This allows users to specify paths with or without slashes (e.g., "backups/mysql", "/backups/mysql/", etc.)
+if [ -n "$S3_DESTINATION_PATH" ]; then
+    S3_DESTINATION_PATH=$(echo "$S3_DESTINATION_PATH" | sed 's|^/||;s|/$||')
+    S3_DESTINATION_PATH="${S3_DESTINATION_PATH}/"
+fi
+
 # Timestamp (sortable AND readable)
 TIMESTAMP=$(date +"%s - %A %d %B %Y @ %H%M")
 
@@ -42,7 +50,7 @@ TIMESTAMP=$(date +"%s - %A %d %B %Y @ %H%M")
 DATABASES=$(mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SHOW DATABASES;" | tr -d "| " | grep -v "\(Database\|information_schema\|performance_schema\|mysql\|test\)")
 
 # Display backup destination
-log "Backing up databases to: s3://${S3_BUCKET_NAME}/$TIMESTAMP/"
+log "Backing up databases to: s3://${S3_BUCKET_NAME}/${S3_DESTINATION_PATH}$TIMESTAMP/"
 
 # Process each database
 for DATABASE in $DATABASES; do
@@ -50,7 +58,7 @@ for DATABASE in $DATABASES; do
     # Define backup filenames
     BACKUP_FILENAME="$TIMESTAMP - $DATABASE.sql.gz"
     TEMP_FILE="$TEMP_DIR/$BACKUP_FILENAME"
-    S3_OBJECT="s3://${S3_BUCKET_NAME}/$TIMESTAMP/$BACKUP_FILENAME"
+    S3_OBJECT="s3://${S3_BUCKET_NAME}/${S3_DESTINATION_PATH}$TIMESTAMP/$BACKUP_FILENAME"
 
     # Display current database being processed
     log "Processing database: $DATABASE"
@@ -74,4 +82,4 @@ for DATABASE in $DATABASES; do
 done
 
 # Display completion message
-log "Successfully backed up all databases to: s3://${S3_BUCKET_NAME}/$TIMESTAMP/"
+log "Successfully backed up all databases to: s3://${S3_BUCKET_NAME}/${S3_DESTINATION_PATH}$TIMESTAMP/"
