@@ -63,6 +63,11 @@ The script is now ready to use. Feel free to test it:
 ./s3bk-mysql.sh
 ```
 
+The script can also be run in silent mode (suppressing normal output, only showing errors):
+```bash
+./s3bk-mysql.sh --silent
+```
+
 4. Set up a cron job (optional):
 
 ```bash
@@ -72,9 +77,8 @@ crontab -e
 Add a line to run the backup daily (at 3 AM, for example):
 
 ```
-0 3 * * * bash ~/s3bk-mysql.sh
+0 3 * * * bash ~/s3bk-mysql.sh --silent
 ```
-
 
 ### Notes:
 - Root access is typically required if backing up all databases. 
@@ -125,6 +129,11 @@ The script is now ready to use. Feel free to test it:
 ./s3bk-static.sh
 ```
 
+The script can also be run in silent mode (suppressing normal output, only showing errors):
+```bash
+./s3bk-static.sh --silent
+```
+
 4. Set up a cron job (optional):
 
 ```bash
@@ -132,7 +141,6 @@ crontab -e
 ```
 
 Add a line to run the backup daily (at 3 AM, for example):
-
 ```
-0 3 * * * bash ~/s3bk-static.sh
+0 3 * * * bash ~/s3bk-static.sh --silent
 ```

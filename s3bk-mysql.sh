@@ -14,6 +14,24 @@ TEMP_DIR="/tmp"
 ########################################################################
 
 
+# Parse command line arguments
+SILENT=0
+for arg in "$@"; do
+    case $arg in
+        -s|--silent)
+            SILENT=1
+            shift
+            ;;
+    esac
+done
+
+# Logging function (only outputs if not in silent mode)
+log() {
+    if [ $SILENT -eq 0 ]; then
+        echo "$@"
+    fi
+}
+
 # Exit on error
 set -e
 
@@ -24,7 +42,7 @@ TIMESTAMP=$(date +"%s - %A %d %B %Y @ %H%M")
 DATABASES=$(mysql -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "SHOW DATABASES;" | tr -d "| " | grep -v "\(Database\|information_schema\|performance_schema\|mysql\|test\)")
 
 # Display backup destination
-echo "Backing up databases to: s3://${S3_BUCKET_NAME}/$TIMESTAMP/"
+log "Backing up databases to: s3://${S3_BUCKET_NAME}/$TIMESTAMP/"
 
 # Process each database
 for DATABASE in $DATABASES; do
@@ -35,21 +53,25 @@ for DATABASE in $DATABASES; do
     S3_OBJECT="s3://${S3_BUCKET_NAME}/$TIMESTAMP/$BACKUP_FILENAME"
 
     # Display current database being processed
-    echo "Processing database: $DATABASE"
+    log "Processing database: $DATABASE"
 
     # Create compressed database dump
-    echo "  Creating backup file: $TEMP_FILE"
+    log "  Creating backup file: $TEMP_FILE"
     mysqldump -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" --force --opt --databases "$DATABASE" | gzip -c > "$TEMP_FILE"
 
     # Upload backup to S3
-    echo "  Uploading backup to S3..."
-    s3cmd put "$TEMP_FILE" "$S3_OBJECT"
+    log "  Uploading backup to S3..."
+    if [ $SILENT -eq 1 ]; then
+        s3cmd put "$TEMP_FILE" "$S3_OBJECT" >/dev/null
+    else
+        s3cmd put "$TEMP_FILE" "$S3_OBJECT"
+    fi
 
     # Remove temporary backup file
     rm -f "$TEMP_FILE"
-    echo "  Backup completed for database: $DATABASE"
+    log "  Backup completed for database: $DATABASE"
 
 done
 
 # Display completion message
-echo "Successfully backed up all databases to: s3://${S3_BUCKET_NAME}/$TIMESTAMP/"
+log "Successfully backed up all databases to: s3://${S3_BUCKET_NAME}/$TIMESTAMP/"
