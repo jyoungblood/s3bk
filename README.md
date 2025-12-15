@@ -4,9 +4,11 @@ Bash scripts for automating MySQL and static file backups to S3-compatible stora
 
 Works with all S3-compatible storage services, including Cloudflare R2.
 
+Heavily inspired by David King's classic [s3mysqlbackup.sh](https://gist.github.com/oodavid/2206527/)
+
 ---
 
-## Prerequisites
+## Prerequisites - s3cmd setup
 
 ### Install s3cmd
 
@@ -20,20 +22,18 @@ Run the configuration wizard to set up your S3 credentials:
 s3cmd --configure
 ```
 
-Configure your credentials for AWS S3, Cloudflare R2, or any other S3-compatible storage service. The configuration file is saved to `$HOME/.s3cfg` by default.
+Configure your credentials for AWS S3, Cloudflare R2, or other S3-compatible storage service. The configuration file is saved to `$HOME/.s3cfg` by default.
 
 ### Requirements
 
-- The user running the script must have permission to execute `mysqldump` (for MySQL backups)
-- Ensure the script is executable and owned by the user who will run it
+- The user running the scripts must have permission to execute `mysqldump` (for MySQL backups)
+- Ensure the scripts are executable and owned by the user who will run it
 
 ---
 
-## s3bk-mysql
+## s3bk-mysql setup
 
-Automated MySQL database backup script that dumps all databases (excluding system databases) to S3.
-
-### Setup
+This script dumps all databases (excluding system databases), compresses them, and uploads them to S3.
 
 1. Download the script to your machine:
 
@@ -51,8 +51,6 @@ MYSQL_USER="root"
 MYSQL_PASSWORD="xxxxxx"
 S3_BUCKET_NAME="xxxxxx
 ```
-
-**Note:** Root access is typically required if backing up all databases. You may also need to modify the database exclusion filter if you want to exclude additional databases beyond the default system databases.
 
 3. Make the script executable:
 
@@ -72,17 +70,18 @@ Add a line to run the backup daily (at 3 AM, for example):
 0 3 * * * bash ~/s3bk-mysql.sh
 ```
 
-### Tips
 
-- If using Plesk, you may need to set the password using: `MYSQL_PASSWORD="$(cat /etc/psa/.psa.shadow)"`
+### Notes:
+- Root access is typically required if backing up all databases. 
+- You may also need to modify the database exclusion filter if you want to exclude additional databases beyond the default system databases.
+- If using Plesk, you may want to set the password using: `MYSQL_PASSWORD="$(cat /etc/psa/.psa.shadow)"`
+- This script uses mysqldump command's `-p` flag, so don't be alarmed when you see the standard *"mysqldump: [Warning] Using a password on the command line interface can be insecure."*
 
 ---
 
-## s3bk-static
+## s3bk-static setup
 
-Automated static file backup script that syncs local directories to S3.
-
-### Setup
+This script syncs local directories of static files to a specific S3 location.
 
 1. Download the script to your machine:
 
@@ -90,8 +89,6 @@ Automated static file backup script that syncs local directories to S3.
 cd ~
 curl -O https://raw.githubusercontent.com/jyoungblood/s3bk/0.1/s3bk-static.sh
 ```
-
-
 
 2. Edit the configuration variables at the top of the script:
 
@@ -129,9 +126,3 @@ Add a line to run the backup daily (at 3 AM, for example):
 ```
 0 3 * * * bash ~/s3bk-static.sh
 ```
-
----
-
-## Credits
-
-Based on David King's [s3mysqlbackup.sh](https://gist.github.com/oodavid/2206527/).
