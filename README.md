@@ -88,7 +88,7 @@ Automated static file backup script that syncs local directories to S3.
 
 ```bash
 cd ~
-curl -O https://raw.githubusercontent.com/jyoungblood/s3bk/0.1/s3bk-mysql.sh
+curl -O https://raw.githubusercontent.com/jyoungblood/s3bk/0.1/s3bk-static.sh
 ```
 
 
