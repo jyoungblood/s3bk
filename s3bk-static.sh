@@ -39,13 +39,13 @@ log() {
 # Exit on error
 set -e
 
-# Normalize S3 destination path: remove leading/trailing slashes, then add trailing slash if not empty
+# Normalize S3 destination path: remove leading/trailing slashes
 # This allows users to specify paths with or without slashes (e.g., "backups/static", "/backups/static/", etc.)
+# Note: s3cmd sync works better without trailing slashes on the destination path
 normalize_s3_path() {
     local path="$1"
     if [ -n "$path" ]; then
         path=$(echo "$path" | sed 's|^/||;s|/$||')
-        path="${path}/"
     fi
     echo "$path"
 }
