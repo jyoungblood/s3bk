@@ -115,8 +115,6 @@ BACKUP_PATHS=(
 )
 ```
 
-The script will automatically prefix `s3://${S3_BUCKET_NAME}/` to each destination path.
-
 3. Make the script executable:
 
 ```bash
