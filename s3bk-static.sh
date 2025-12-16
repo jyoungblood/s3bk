@@ -10,8 +10,8 @@ S3_BUCKET_NAME="xxxxxx"
 # Backup paths configuration
 # Format: local_path => s3_destination_path
 BACKUP_PATHS=(
-    "/home/xxxxxx/xxxxxx => /static/xxxxxx"
-    "/home/xxxxxx/xxxxxx2 => /static/xxxxxx2"
+    "/home/xxxxxx/xxxxxx/ => /static/xxxxxx/"
+    "/home/xxxxxx/xxxxxx2/ => /static/xxxxxx2/"
 )
 
 
