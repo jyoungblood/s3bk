@@ -9,6 +9,7 @@ S3_BUCKET_NAME="xxxxxx"
 
 # Backup paths configuration
 # Format: local_path => s3_destination_path
+# S3 destination paths must have both leading and trailing slashes (e.g., "/static/path/")
 BACKUP_PATHS=(
     "/home/xxxxxx/xxxxxx/ => /static/xxxxxx/"
     "/home/xxxxxx/xxxxxx2/ => /static/xxxxxx2/"
@@ -39,22 +40,12 @@ log() {
 # Exit on error
 set -e
 
-# Normalize S3 destination path: remove leading/trailing slashes
-# This allows users to specify paths with or without slashes (e.g., "backups/static", "/backups/static/", etc.)
-# Note: s3cmd sync works better without trailing slashes on the destination path
-normalize_s3_path() {
-    local path="$1"
-    if [ -n "$path" ]; then
-        path=$(echo "$path" | sed 's|^/||;s|/$||')
-    fi
-    echo "$path"
-}
-
 # Process each backup path
 for BACKUP_CONFIG in "${BACKUP_PATHS[@]}"; do
     LOCAL_PATH="${BACKUP_CONFIG%% => *}"
     S3_DESTINATION_PATH="${BACKUP_CONFIG#* => }"
-    S3_DESTINATION_PATH=$(normalize_s3_path "$S3_DESTINATION_PATH")
+    # Remove leading slash from S3 path (s3:// already includes it)
+    S3_DESTINATION_PATH="${S3_DESTINATION_PATH#/}"
     S3_DESTINATION="s3://${S3_BUCKET_NAME}/${S3_DESTINATION_PATH}"
 
     # Display current backup being processed

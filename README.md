@@ -48,7 +48,7 @@ nano ~/s3bk-mysql.sh
 MYSQL_USER="root"
 MYSQL_PASSWORD="rootP4$5w0Rd"
 S3_BUCKET_NAME="bucket"
-S3_DESTINATION_PATH="destination/path"
+S3_DESTINATION_PATH="destination/path/"
 ```
 
 3. Make the script executable:
